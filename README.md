@@ -28,7 +28,7 @@ if( myButton && myButton->isPushed() )
   // stuff happens
 }
 
-IndexedAxis * myAxis = manager->findButton( "camera left/right" );
+IndexedAxis * myAxis = manager->findAxis( "camera left/right" );
 if( myAxis )
 {
    float howMuch = myAxis->getNormalizedValue();
