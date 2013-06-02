@@ -1,13 +1,27 @@
-//
-//  OSXManager.cpp
-//  HIDCollapse
-//
-//  Created by Juan Carlos Borda on 5/22/13.
-//  Copyright (c) 2013 Juan Carlos Borda. All rights reserved.
-//
+/*
+ The MIT License (MIT)
+ 
+ Copyright (c) 2013 Juan Borda
+ 
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ 
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+ 
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+ */
 
-#include <IOKit/hid/IOHIDKeys.h>
-#include <IOKit/hid/IOHIDDevice.h>
 #include <IOKit/hid/IOHIDLib.h>
 
 #include "IOHIDLib_.h"
@@ -18,6 +32,22 @@
 namespace HIDCollapse
 {
 
+    
+    OSXDeviceDescriptor::OSXDeviceDescriptor( const std::string & manuf, const std::string & product ,
+                                             int64_t vendorID, int64_t productID, int64_t versionID ,
+                                             IOHIDDeviceRef dev ):
+    DeviceDescriptor( manuf , product, vendorID, productID, versionID),
+    deviceRef( dev )
+    {
+        
+    }
+    
+    bool OSXDeviceDescriptor::evaluateElement( const ElementDescriptor & , int64_t * outVal, int64_t * outMin , int64_t * outMax )
+    {
+        return false;
+    }
+
+    
     OSXManager::OSXManager()
     {
         osxHidManager = 0;
@@ -88,10 +118,10 @@ namespace HIDCollapse
     
     void OSXManager::rebuildDeviceDescriptors()
     {
-        char manufstr[256];
-        char productstr[256];
+        char manufstr[512];
+        char productstr[512];
         
-        t_descriptors newDescriptors;
+        tPhysicalDevices newDevices;
         
         //make ascii c++ strings.
         //this should't be an issue as we should be getting
@@ -110,11 +140,11 @@ namespace HIDCollapse
             //IOHIDDevice_GetVendorIDSource(IOHIDDeviceRef inIOHIDDeviceRef); //finds out if bluetooth or usb
             
             CFStringRef cfmanuf = IOHIDDevice_GetManufacturer( dev );
-            CFStringGetCString( cfmanuf , manufstr, 256, toEncoding );
+            CFStringGetCString( cfmanuf , manufstr, 512, toEncoding );
             CFRelease( cfmanuf );
             
             CFStringRef cfdevstr = IOHIDDevice_GetProduct( dev );
-            CFStringGetCString( cfdevstr , productstr , 256, toEncoding );
+            CFStringGetCString( cfdevstr , productstr , 512, toEncoding );
             CFRelease( cfdevstr );
 
             vendorID = IOHIDDevice_GetVendorID( dev );
@@ -124,99 +154,34 @@ namespace HIDCollapse
             
             OSXDeviceDescriptor * descriptor = new OSXDeviceDescriptor( manufstr , productstr , //implicit std::string conversion
                                                                        vendorID , productID, versionID ,
-                                                                       location , dev );
-            newDescriptors.push_back( descriptor );
+                                                                        dev );
+            newDevices.push_back( descriptor );
         }
-        
-        //after this call, no Indices hold references to descriptors in  reportedDescriptors
-        //only to descriptors in newDescriptors
-        remapIndices( newDescriptors );
 
         //safe to delete old descriptors
-        for( t_descriptors::iterator i = reportedDescriptors.begin() ;i != reportedDescriptors.end() ; i++ )
-            delete *i;
-        reportedDescriptors.clear();
-        reportedDescriptors.assign(newDescriptors.begin(), newDescriptors.end());
-        
-        buildNovelIndices();
-        
-    }
-    
-    void OSXManager::remapIndices( const t_descriptors & newDescriptors )
-    {
-        //look at existing indices and replace old ones with matching new ones
-        for( t_indices::iterator i = indices.begin(); i != indices.end() ; i++ )
+        for( tPhysicalDevices::iterator i = mPhysicalDevices.begin() ;i != mPhysicalDevices.end() ; i++ )
         {
-            //gets their device descriptors
-            OSXIndex * index = *i;
-            const OSXDeviceDescriptor * activeDescriptor = static_cast<const OSXDeviceDescriptor*>( index->getPhysicalDevice() );
-            
-            if( activeDescriptor )
-            {
-                //find divice match
-                bool foundMatch = false;
-                for( t_descriptors::const_iterator j = newDescriptors.begin() ;
-                    j != newDescriptors.end() && !foundMatch ;
-                    j++ )
-                {
-                    OSXDeviceDescriptor * newDescriptor = * j;
-                    if( newDescriptor->matchesPhysicalDevice( activeDescriptor ) )
-                    {
-                        index->setPhysicalDevice( newDescriptor );
-                        newDescriptor->associatedIndex = index;
-                        foundMatch = true;
-                    }
-                }
-                
-                //we found no match. no device for this index
-                if( !foundMatch )
-                {
-                    index->setPhysicalDevice( 0 );
-                }
-            }            
+            deviceUnplugged( *i );
+            delete *i;
+        }
+        mPhysicalDevices.clear();
+        mPhysicalDevices.assign( newDevices.begin(), newDevices.end() );
+        
+        for( tPhysicalDevices::iterator i = mPhysicalDevices.begin() ;i != mPhysicalDevices.end() ; i++ )
+        {
+            devicePlugged( * i );
         }        
     }
     
-    void OSXManager::buildNovelIndices()
-    {
-        //go through all the reportedDEvices checking to see
-        //which of them has no associatedindex
-        for( t_descriptors::iterator i = reportedDescriptors.begin() ; i!=reportedDescriptors.end(); i++ )
-        {
-            OSXDeviceDescriptor * descriptor = * i;
-            if( !descriptor->associatedIndex )
-            {
-                //find an index descriptor that matches more than 0.5
-                float max = 0.5f;
-                IndexDescriptor * maxDescriptor = 0;
-                for( t_indexDescriptors::iterator j = indexDescriptors.begin();
-                    j != indexDescriptors.end() ;
-                    j++)
-                {
-                    IndexDescriptor * indexDesc = * j;
-                    float score = indexDesc->getSourceDevice()->fuzzyCompareType( descriptor );
-                    if( score > max )
-                    {
-                        max = score;
-                        maxDescriptor = indexDesc;
-                    }
-                }
-                
-                if( maxDescriptor )
-                {
-                    //build an index
-                    OSXIndex * ind = new OSXIndex( maxDescriptor );
-                    ind->setPhysicalDevice( descriptor );
-                    descriptor->associatedIndex = ind;
-                    indices.push_back( ind );
-                }
-            }
-        }
-    }
-
-    
     void OSXManager::cleanup()
     {
+        for( tPhysicalDevices::iterator i = mPhysicalDevices.begin(); i!=mPhysicalDevices.end(); i++ )
+        {
+            deviceUnplugged( * i );
+            delete *i;
+        }
+        mPhysicalDevices.clear();
+
         if( osxHidManager )
         {
             IOHIDManagerClose( osxHidManager , kIOHIDOptionsTypeNone );
@@ -226,17 +191,8 @@ namespace HIDCollapse
         
         osxReportedDevices.clear();
         
-        for( t_indices::iterator i = indices.begin(); i != indices.end(); i++ )
-            delete * i;
-        indices.clear();
         
-        for( t_descriptors::iterator i = reportedDescriptors.begin(); i!=reportedDescriptors.end(); i++ )
-            delete *i;
-        reportedDescriptors.clear();
         
-        for( t_indexDescriptors::iterator i = indexDescriptors.begin(); i!= indexDescriptors.end(); i++ )
-            delete * i;
-        indexDescriptors.clear();
     }
     
     //release the result after you are finished

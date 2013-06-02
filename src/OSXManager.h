@@ -1,10 +1,26 @@
-//
-//  OSXManager.h
-//  HIDCollapse
-//
-//  Created by Juan Carlos Borda on 5/22/13.
-//  Copyright (c) 2013 Juan Carlos Borda. All rights reserved.
-//
+/*
+ The MIT License (MIT)
+ 
+ Copyright (c) 2013 Juan Borda
+ 
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ 
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+ 
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+ */
 
 #pragma once
 #include <IOKit/hid/IOHIDManager.h>
@@ -13,33 +29,34 @@
 
 namespace HIDCollapse
 {
-    
-    
+    /* do we need this?
+    class OSXElementDescriptor: public ElementDescriptor
+    {
+    public:
+        OSXElementDescriptor();
+        OSXElementDescriptor( int64_t page , int64_t usage );
+        OSXElementDescriptor( const std::string & nameKey );
+        OSXElementDescriptor( int64_t sequential );
+    protected:
+        //system specific stuff we might need to keep here.
+    };
+    */
+     
     class OSXDeviceDescriptor: public DeviceDescriptor
     {
     public:
         OSXDeviceDescriptor( const std::string & manuf, const std::string & product ,
                             int64_t vendorID, int64_t productID, int64_t versionID ,
-                            int64_t location , IOHIDDeviceRef dev );
-        
-        virtual void copyFrom( const DeviceDescriptor * );
+                            IOHIDDeviceRef dev );
+               
+        virtual bool evaluateElement( const ElementDescriptor & , int64_t * outVal, int64_t * outMin , int64_t * outMax );
 
-        virtual bool matchesPhysicalDevice( const OSXDeviceDescriptor * );
         
         IOHIDDeviceRef deviceRef;
-        long deviceLocation;
-        Index * associatedIndex;
         
     protected:
     };
     
-    class OSXIndex: public Index
-    {
-    public:
-        OSXIndex( IndexDescriptor * id );
-        void setPhysicalDevice( const OSXDeviceDescriptor * dd );
-    };
-
 
     class OSXManager: public Manager
     {
@@ -54,18 +71,14 @@ namespace HIDCollapse
         
         IOHIDManagerRef osxHidManager;
         typedef std::vector<IOHIDDeviceRef> t_reportedDevices;
-        typedef std::vector<OSXDeviceDescriptor*> t_descriptors;
-        typedef std::vector<OSXIndex*> t_indices;
-        typedef std::vector<IndexDescriptor*> t_indexDescriptors;
-        
+
         t_reportedDevices osxReportedDevices;
-        t_indices indices;
-        t_descriptors reportedDescriptors;
-        t_indexDescriptors indexDescriptors;
-        void remapIndices( const t_descriptors & newDescriptors );
+        
         void buildNovelIndices();
         
     private:
+        
+        
         //helper functions to setup the system
         static CFMutableArrayRef buildMultiDeviceList( const UInt32 *inUsagePages, const UInt32 *inUsages, int inNumDeviceTypes );
         static CFMutableDictionaryRef setUpMatchingDictionary( UInt32 inUsagePage, UInt32 inUsage );
