@@ -48,13 +48,25 @@ namespace HIDCollapse
         OSXDeviceDescriptor( const std::string & manuf, const std::string & product ,
                             int64_t vendorID, int64_t productID, int64_t versionID ,
                             IOHIDDeviceRef dev );
-               
-        virtual bool evaluateElement( const ElementDescriptor & , int64_t * outVal, int64_t * outMin , int64_t * outMax );
+        virtual ~OSXDeviceDescriptor();
+        virtual bool evaluateElementAndUpdateDescriptor( ElementDescriptor & ed ,
+                                                        int64_t * outVal,
+                                                        int64_t * outMin ,
+                                                        int64_t * outMax );
 
+        virtual void listElementDescriptors( std::vector<ElementDescriptor> & out );
         
         IOHIDDeviceRef deviceRef;
-        
+        CFArrayRef elements;
     protected:
+        typedef std::map<std::string,IOHIDElementRef> tStrMap;
+        typedef std::map<int64_t, IOHIDElementRef> tSeqMap;
+        typedef std::map<tHIDUsage,IOHIDElementRef> tUsageMap;
+        tStrMap nameMap, usageNameMap;
+        tSeqMap seqMap;
+        tUsageMap usageMap;
+        
+        static void makeDescriptor( ElementDescriptor & ed, IOHIDElementRef );
     };
     
 
@@ -73,7 +85,7 @@ namespace HIDCollapse
         typedef std::vector<IOHIDDeviceRef> t_reportedDevices;
 
         t_reportedDevices osxReportedDevices;
-        
+            
         void buildNovelIndices();
         
     private:

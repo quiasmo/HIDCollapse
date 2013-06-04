@@ -23,7 +23,6 @@
  */
 
 #include "HIDCollapse.h"
-#include "Devices.h"
 
 namespace HIDCollapse
 {
@@ -70,7 +69,7 @@ namespace HIDCollapse
         if( pd )
         {
             int64_t val, min;
-            if( pd->evaluateElement( physicalElement , &val, &min, 0 ) )
+            if( pd->evaluateElementAndUpdateDescriptor( physicalElement , &val, &min, 0 ) )
             {
                 return ( val > min );
             }
@@ -100,7 +99,7 @@ namespace HIDCollapse
         if( pd )
         {
             int64_t val;
-            if( pd->evaluateElement( physicalElement , &val, 0 , 0 ) )
+            if( pd->evaluateElementAndUpdateDescriptor( physicalElement , &val, 0 , 0 ) )
             {
                 return val;
             }
@@ -114,7 +113,7 @@ namespace HIDCollapse
         if( pd )
         {
             int64_t max;
-            if( pd->evaluateElement( physicalElement , 0 , 0 , &max ) )
+            if( pd->evaluateElementAndUpdateDescriptor( physicalElement , 0 , 0 , &max ) )
             {
                 return max;
             }
@@ -128,7 +127,7 @@ namespace HIDCollapse
         if( pd )
         {
             int64_t min;
-            if( pd->evaluateElement( physicalElement , 0 , &min , 0 ) )
+            if( pd->evaluateElementAndUpdateDescriptor( physicalElement , 0 , &min , 0 ) )
             {
                 return min;
             }
@@ -143,7 +142,7 @@ namespace HIDCollapse
         if( pd )
         {
             int64_t val, min, max;
-            if( pd->evaluateElement( physicalElement , &val , &min , &max ) )
+            if( pd->evaluateElementAndUpdateDescriptor( physicalElement , &val , &min , &max ) )
             {
                 int64_t max_min = max-min;
                 if( max_min == 0 ) return 0;

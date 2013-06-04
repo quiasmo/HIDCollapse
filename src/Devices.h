@@ -29,7 +29,19 @@
 
 namespace HIDCollapse
 {
+
+    class tHIDUsage
+    {
+    public:
+        tHIDUsage( int64_t, int64_t);
+        tHIDUsage( const tHidUsage &);
+        const tHIDUsage & operator=(const tHIDUsage& );
+        int64_t page;
+        int64_t usage;
+    };
     
+    bool operator<(const tHIDUsage & t1, const tHIDUsage & t2 );
+
     class ElementDescriptor
     {
     public:
@@ -37,19 +49,19 @@ namespace HIDCollapse
         ElementDescriptor( int64_t page , int64_t usage );
         ElementDescriptor( const std::string & nameKey );
         ElementDescriptor( int64_t sequential );
-        ElementDescriptor( const ElementDescriptor & );
+        ElementDescriptor( const ElementDescriptor & );        
         
         virtual ~ElementDescriptor();
         virtual bool strictCompare( const ElementDescriptor & e );
         const ElementDescriptor & operator=( const ElementDescriptor &);
-    protected:
-        
-        int64_t page, usage;
+                
+        tHIDUsage hidUsage;
         std::string usageString;
         std::string nameKey;
         int64_t sequential;
+        void * osReference;
     };
-    
+
     /**
      * Base calss for identifying a type of device
      * using HID vendor, device and version ids or
@@ -84,7 +96,12 @@ namespace HIDCollapse
         //puts them in outVal, outMin, outMax ( can be null values if not needed )
         //returns true if the element was successfully evaluated
         //false otherwise
-        virtual bool evaluateElement( const ElementDescriptor & , int64_t * outVal, int64_t * outMin , int64_t * outMax );
+        //ed.osReference is updated to matching elements if current ed.osReference is
+        //does not coincide with this device
+        virtual bool evaluateElementAndUpdateDescriptor( ElementDescriptor & ed ,
+                                                        int64_t * outVal,
+                                                        int64_t * outMin ,
+                                                        int64_t * outMax );
     protected:
         
         static float intCompare( int64_t i1, int64_t i2 );

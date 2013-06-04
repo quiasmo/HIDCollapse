@@ -23,7 +23,7 @@
  */
 
 #include <IOKit/hid/IOHIDLib.h>
-
+#include <IOKit/hid/IOHIDDevice.h>
 #include "IOHIDLib_.h"
 
 #include "OSXManager.h"
@@ -39,15 +39,177 @@ namespace HIDCollapse
     DeviceDescriptor( manuf , product, vendorID, productID, versionID),
     deviceRef( dev )
     {
+        CFDictionaryRef matching = NULL;
         
+        elements = IOHIDDeviceCopyMatchingElements(
+                                                              deviceRef,
+                                                              matching,
+                                                              kIOHIDOptionsTypeNone );
+        
+        if( elements )
+        {
+            CFIndex size = CFArrayGetCount( elements );
+            ElementDescriptor element;
+            
+            for( CFIndex i = 0; i < size; i++ )
+            {
+                
+                IOHIDElementRef ref = (IOHIDElementRef) CFArrayGetValueAtIndex( elements , i );
+                //build fast access maps/multimaps:
+                
+                makeDescriptor( element , ref );
+                if( element.hidUsage.page >= 0 )
+                {
+                    usageMap[element.hidUsage] = ref;
+                }
+                if( element.usageString.size() > 0 )
+                {
+                    nameMap[element.usageString] = ref;
+                }
+                if( element.sequential <= 0 )
+                {
+                    seqMap[element.sequential] = ref;
+                }
+            }
+        }
     }
     
-    bool OSXDeviceDescriptor::evaluateElement( const ElementDescriptor & , int64_t * outVal, int64_t * outMin , int64_t * outMax )
+    void OSXDeviceDescriptor::makeDescriptor( ElementDescriptor & ed, IOHIDElementRef ref )
     {
-        return false;
+        long page , usage, cookie;
+        char elemName[512];
+        if(IOHIDElement_GetLongProperty( ref , CFSTR(kIOHIDElementUsageKey), &usage) &&
+           IOHIDElement_GetLongProperty( ref , CFSTR(kIOHIDElementUsagePageKey), &page))
+        {
+            ed.hidUsage.usage = usage;
+            ed.hidUsage.page = page;
+            ed.usageString = "";//TODO:getUsageString( ), see HID_Utilities
+        }
+        else
+        {
+            ed.hidUsage.usage = -1;
+            ed.hidUsage.page =-1;
+            ed.usageString = "";
+        }
+        
+        if( !IOHIDElement_GetLongProperty( ref , CFSTR(kIOHIDElementCookieKey), &cookie))
+        {
+            ed.sequential = cookie;
+        }
+        else
+        {
+            cookie = -1;
+        }
+        
+        CFTypeRef tCFTypeRef;
+        tCFTypeRef = IOHIDElementGetProperty( ref, CFSTR(kIOHIDElementNameKey) ) ;
+        if( CFGetTypeID(tCFTypeRef) == CFStringGetTypeID() )
+        {
+            CFStringGetCString( (CFStringRef)tCFTypeRef , elemName , 512, kCFStringEncodingASCII );
+            ed.nameKey = elemName ;
+            CFRelease( tCFTypeRef );
+        }
+        else{
+            ed.nameKey = "";
+        }
+        ed.osReference = ref;
     }
 
     
+    OSXDeviceDescriptor::~OSXDeviceDescriptor()
+    {
+        if( elements )
+        {
+            CFRelease( elements );
+        }
+    }
+    
+    bool OSXDeviceDescriptor::evaluateElementAndUpdateDescriptor( ElementDescriptor & ed ,
+                                                                 int64_t * outVal ,
+                                                                 int64_t * outMin ,
+                                                                 int64_t * outMax )
+    {
+        IOHIDElementRef finalElem = 0;
+        if( ed.osReference )
+        {
+            IOHIDDeviceRef dev = IOHIDElementGetDevice((IOHIDElementRef) ed.osReference);
+            if( dev == deviceRef ) finalElem = (IOHIDElementRef) ed.osReference;
+        }
+        
+        if( !finalElem )
+        {
+            tUsageMap::iterator e = usageMap.find( ed.hidUsage );
+            if( e != usageMap.end() )
+            {
+                finalElem = e->second;
+            }
+        }
+        
+        if( !finalElem )
+        {
+            tStrMap::iterator e = nameMap.find( ed.nameKey );
+            if( e != nameMap.end() )
+            {
+                finalElem = e->second;
+            }
+        }
+        
+        if( !finalElem )
+        {
+            tSeqMap::iterator e = seqMap.find(ed.sequential);
+            if( e != seqMap.end() )
+            {
+                finalElem = e->second;
+            }
+        }
+        
+        if( finalElem )
+        {
+            if( outVal )
+            {
+                IOHIDValueRef tIOHIDValueRef;
+                if ( kIOReturnSuccess == IOHIDDeviceGetValue( deviceRef , finalElem , &tIOHIDValueRef ) ) {
+                    *outVal = IOHIDValueGetIntegerValue( tIOHIDValueRef );
+                }
+            }
+            if( outMin )
+            {
+                long res;
+                if( IOHIDElement_GetLongProperty( finalElem , CFSTR(kIOHIDElementMinKey), &res ) )
+                {
+                    *outMin = res;
+                }
+                else *outMin = 0;
+            }
+            if( outMax )
+            {
+                long res;
+                if( IOHIDElement_GetLongProperty( finalElem , CFSTR(kIOHIDElementMaxKey), &res ) )
+                {
+                    *outMax = res;
+                }
+                else *outMax = 0;
+            }
+            //modify ref
+            ed.osReference = finalElem;
+            return true;
+        }
+        return false;
+            
+    }
+
+    void OSXDeviceDescriptor::listElementDescriptors( std::vector<ElementDescriptor> & out )
+    {
+        CFIndex size = CFArrayGetCount( elements );
+        ElementDescriptor element;
+        out.resize(size);
+        for( CFIndex i = 0; i < size; i++ )
+        {
+            IOHIDElementRef ref = (IOHIDElementRef) CFArrayGetValueAtIndex( elements , i );
+            makeDescriptor( out[i] , ref );
+        }
+    }
+
     OSXManager::OSXManager()
     {
         osxHidManager = 0;
@@ -158,7 +320,6 @@ namespace HIDCollapse
             newDevices.push_back( descriptor );
         }
 
-        //safe to delete old descriptors
         for( tPhysicalDevices::iterator i = mPhysicalDevices.begin() ;i != mPhysicalDevices.end() ; i++ )
         {
             deviceUnplugged( *i );

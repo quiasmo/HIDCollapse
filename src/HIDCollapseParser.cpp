@@ -32,7 +32,7 @@
 
 #include <boost/spirit/include/support_multi_pass.hpp>
 #include <boost/spirit/include/classic_position_iterator.hpp>
-
+#if 1
 #include <iomanip>
 #include <fstream>
 
@@ -311,7 +311,7 @@ namespace HIDCollapse
         return r;
     }
 }
-
+/*
 int main(int argc, char*argv[])
 {
     using namespace HIDCollapse;
@@ -339,3 +339,6 @@ int main(int argc, char*argv[])
     }
     
 }
+ */
+#else
+#endif

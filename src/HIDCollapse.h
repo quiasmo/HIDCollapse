@@ -21,8 +21,7 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
  */
-#ifndef HIDCollapse_HIDCollapse_h
-#define HIDCollapse_HIDCollapse_h
+#pragma once
 
 namespace HIDCollapse
 {
@@ -33,6 +32,7 @@ namespace HIDCollapse
     class IndexedElement;
     class IndexedButton;
     class IndexedAxis;
+    class tHidUsage;
 }
 
 #include "Devices.h"
@@ -40,4 +40,3 @@ namespace HIDCollapse
 #include "Index.h"
 #include "Manager.h"
 
-#endif

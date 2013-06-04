@@ -36,29 +36,49 @@
 namespace HIDCollapse
 {
 
+    
+    
     const float DeviceDescriptor::MATCH_THRESHOLD = 0.5f;
 
+    tHIDUsage::tHIDUsage( int64_t page , int64_t usage):page(page),usage(usage)
+    {
+    }
+    tHIDUsage::tHIDUsage( const tHidUsage &p)
+    {
+        *this = p;
+    }
+    const tHIDUsage & tHIDUsage::operator=( const tHIDUsage& p )
+    {
+        page = p.page;
+        usage = p.usage;
+        return *this;
+    }
     
-    ElementDescriptor::ElementDescriptor():page(-1),usage(-1),sequential(-1)
+    bool operator<(const tHIDUsage & t1, const tHIDUsage & t2 )
     {
+        if( t1.page == t2.page )
+            return t1.usage < t2.usage;
+        else
+            return t1.page < t2.page;
         
-    }
-    ElementDescriptor::ElementDescriptor( int64_t page , int64_t usage ):
-    page(page),usage(usage)
-    {
-        //fill usage string here from 
     }
     
-    ElementDescriptor::ElementDescriptor( const std::string & nameKey )
+    ElementDescriptor::ElementDescriptor():hidUsage(-1,-1),sequential(-1), osReference(0)
     {
-        
     }
-    ElementDescriptor::ElementDescriptor( int64_t sequential ) :
-    page(-1),usage(-1), sequential(sequential)
+    ElementDescriptor::ElementDescriptor( int64_t page , int64_t usage ):hidUsage(page,usage), osReference(0)
     {
-        
     }
-    ElementDescriptor::ElementDescriptor( const ElementDescriptor & ed )
+    
+    ElementDescriptor::ElementDescriptor( const std::string & nameKey ): hidUsage(-1,-1), sequential(-1),osReference(0)
+    {
+    }
+    ElementDescriptor::ElementDescriptor( int64_t sequential ) : hidUsage(-1,-1), sequential(sequential),osReference(0)
+    {
+        hidUsage.usage = -1;
+        hidUsage.page = -1;
+    }
+    ElementDescriptor::ElementDescriptor( const ElementDescriptor & ed ):hidUsage(-1,-1),osReference(0)
     {
         *this = ed;
     }
@@ -71,23 +91,24 @@ namespace HIDCollapse
     {
         if( nameKey.size() > 0 ) return nameKey.compare(e.nameKey) == 0;
         if( sequential >= 0 ) return sequential == e.sequential;
-        if( page >=0 && usage >= 0 ) return  page == e.page && usage == e.usage;
+        if( hidUsage.page >=0 && hidUsage.usage >= 0 )
+            return  hidUsage.page == e.hidUsage.page && hidUsage.usage == e.hidUsage.usage;
         
         return false;
     }
     
     const ElementDescriptor & ElementDescriptor::operator=( const ElementDescriptor & ed )
     {
-        page = ed.page;
-        usage = ed.usage;
+        hidUsage.page = ed.hidUsage.page;
+        hidUsage.usage = ed.hidUsage.usage;
         usageString = ed.usageString;
         nameKey = ed.nameKey;
         sequential = ed.sequential;
+        osReference = ed.osReference;
         return *this;
     }
 
-    
-    
+        
     DeviceDescriptor::DeviceDescriptor( int64_t vendorID, int64_t productID , int64_t versionID ):
     vendorID(vendorID),productID(productID),versionID(versionID)
     {
@@ -122,7 +143,6 @@ namespace HIDCollapse
     DeviceDescriptor:: ~DeviceDescriptor()
     {
     }
-
     
     //fuzzy compare returns 0..1 where 1 is a perfect match
     //and 0 is a complete mismatch
@@ -134,7 +154,6 @@ namespace HIDCollapse
         factors[1] = intCompare( productID, dd->productID );
         factors[2] = intCompare( versionID, dd->versionID );
         factors[3] = stringSimilarity( vendor_product_combo , dd->vendor_product_combo );
-        
         
         float res = 1.f;
         
@@ -247,7 +266,10 @@ namespace HIDCollapse
         }
     }
     
-    bool DeviceDescriptor::evaluateElement( const ElementDescriptor & , int64_t * outVal, int64_t * outMin , int64_t * outMax )
+    bool DeviceDescriptor::evaluateElementAndUpdateDescriptor( ElementDescriptor & ,
+                                                              int64_t * outVal ,
+                                                              int64_t * outMin ,
+                                                              int64_t * outMax )
     {
         //this is a non physical Device. always fails to evaluate
         return false;

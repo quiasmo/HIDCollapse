@@ -367,6 +367,7 @@
 					/usr/local/include,
 					"/Users/juan/Dev/boost-trunk",
 				);
+				OTHER_CPLUSPLUSFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 			};
@@ -382,6 +383,7 @@
 					/usr/local/include,
 					"/Users/juan/Dev/boost-trunk",
 				);
+				OTHER_CPLUSPLUSFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 			};
