@@ -30,7 +30,7 @@
 namespace HIDCollapse
 {
 
-    class tHIDUsage
+    class HIDC_EXPORT tHIDUsage
     {
     public:
         tHIDUsage( int64_t, int64_t);
@@ -40,9 +40,9 @@ namespace HIDCollapse
         int64_t usage;
     };
     
-    bool operator<(const tHIDUsage & t1, const tHIDUsage & t2 );
+    HIDC_EXPORT bool operator<(const tHIDUsage & t1, const tHIDUsage & t2 );
 
-    class ElementDescriptor
+    class HIDC_EXPORT ElementDescriptor
     {
     public:
         ElementDescriptor();
@@ -61,14 +61,17 @@ namespace HIDCollapse
         int64_t sequential;
         void * osReference;
     };
-
+    
+    HIDC_EXPORT std::ostream & operator<<( std::ostream & , const ElementDescriptor & );
+    
+    
     /**
      * Base calss for identifying a type of device
      * using HID vendor, device and version ids or
      * sing descriptions strings that resemble each other
      * resemblance is common tokens within vendor_device_combo
      */
-    class DeviceDescriptor
+    class HIDC_EXPORT DeviceDescriptor
     {
     public:
         DeviceDescriptor();
@@ -102,6 +105,8 @@ namespace HIDCollapse
                                                         int64_t * outVal,
                                                         int64_t * outMin ,
                                                         int64_t * outMax );
+        
+        const std::string & getVendorProductCombo();
     protected:
         
         static float intCompare( int64_t i1, int64_t i2 );

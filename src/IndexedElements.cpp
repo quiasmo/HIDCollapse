@@ -36,12 +36,12 @@ namespace HIDCollapse
     {
     }
     
-    Index * IndexedElement::getParent()
+    Index * IndexedElement::getParent()const
     {
         return parent;
     }
     
-    const ElementDescriptor & IndexedElement::getPhysicalElement()
+    const ElementDescriptor & IndexedElement::getPhysicalElement()const
     {
         return physicalElement;
     }
@@ -50,7 +50,7 @@ namespace HIDCollapse
     IndexedButton::IndexedButton( Index * parent , const ElementDescriptor & physicalElement ):
     IndexedElement( parent, physicalElement )
     {
-
+        parent->getPhysicalDevice();
     }
     
     IndexedButton::~IndexedButton()
@@ -58,7 +58,7 @@ namespace HIDCollapse
         
     }
     
-    IndexedElement::Type IndexedButton::getType()
+    IndexedElement::Type IndexedButton::getType() const
     {
         return BUTTON;
     }
@@ -88,7 +88,7 @@ namespace HIDCollapse
     }
     
     
-    IndexedElement::Type IndexedAxis::getType()
+    IndexedElement::Type IndexedAxis::getType()const
     {
         return ABSOLUTE_AXIS;
     }

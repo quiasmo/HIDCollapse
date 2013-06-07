@@ -42,20 +42,20 @@ namespace qi = boost::spirit::qi;
 
 BOOST_FUSION_ADAPT_STRUCT(
                           HIDCollapse::ast::elemHexPairKey,
-                          (int, page)
-                          (int, usage)
+                          (unsigned int, page)
+                          (unsigned int, usage)
                           );
 
 BOOST_FUSION_ADAPT_STRUCT(
                           HIDCollapse::ast::deviceTriplet,
-                          (int, vendor)
-                          (int, product)
-                          (int, version)
+                          (unsigned int, vendor)
+                          (unsigned int, product)
+                          (unsigned int, version)
                           );
 BOOST_FUSION_ADAPT_STRUCT(
                           HIDCollapse::ast::devicePair,
-                          (int , vendor)
-                          (int , product )
+                          (unsigned int , vendor)
+                          (unsigned int , product )
                           );
 
 BOOST_FUSION_ADAPT_STRUCT(
@@ -102,7 +102,7 @@ namespace HIDCollapse
             ;
             
             unesc_str %=  qi::lexeme[qi::lit(qi::_r1)
-                                     >>  *(unesc_char | qi::alnum | (qi::space - qi::eol) )
+                                     >>  *(unesc_char | (qi::space - qi::eol) | qi::alnum | qi::char_(".,;:?!@#$%^&*(){}[]|`~<>-_=+/") )
                                      >>  qi::lit(qi::_r1)]
             ;
         }
@@ -124,19 +124,17 @@ namespace HIDCollapse
             using namespace qi;
             
             stringLit       = us(singleQuote) | us(doubleQuote) ;
-            
-            hexadecimal     = "0x" >> hex ;
-            
-            elemHexPairKey  = hexadecimal > "," > hexadecimal;
-            devicePair      = hexadecimal > "," > hexadecimal;
-            deviceTriplet   = hexadecimal > "," > hexadecimal > "," > hexadecimal;
+                                    
+            elemHexPairKey  = lit("0x") > hex > lit(",") > lit("0x") > hex;
+            devicePair      = lit("0x") > hex > lit(",") > lit("0x") > hex ;
+            deviceTriplet   = lit("0x") > hex > lit(",") > lit("0x") > hex > lit(",") > lit("0x") > hex;
             
             elementKey      = stringLit | elemHexPairKey | int_ ;
             
             indexKey        = stringLit | int_;
             indexKeys       = indexKey % ",";
             button          = lit("button") >> "(" >> indexKeys >> ")";
-            axis            = (lit("axe")|lit("axis"))   >> "(" >> indexKeys >> ")";
+            axis            = lit("axis")   >> "(" >> indexKeys >> ")";
             
             indexTarget     = button | axis;
             
@@ -145,11 +143,10 @@ namespace HIDCollapse
             
             index           = lit("index") >> "(" >> stringLit >> ")";
             device           = lit("device") >> "(" >>  (stringLit | deviceTriplet | devicePair) >> ")";
-            hidcollapse      =  lit("map") >> device >> lit("to") >> index >> "{" >> * entry >> "}";
+            hidcollapse      =  lit("map") > device > lit("to") > index > "{" >> * entry > "}";
             hidcollapseList  = * hidcollapse;
             
             //uncomment BOOST_SPIRIT_DEBUG at top of file if you need this
-            BOOST_SPIRIT_DEBUG_NODE( hexadecimal );
             BOOST_SPIRIT_DEBUG_NODE( stringLit );
             BOOST_SPIRIT_DEBUG_NODE( index );
             BOOST_SPIRIT_DEBUG_NODE( expression );
@@ -186,8 +183,7 @@ namespace HIDCollapse
         qi::rule< Iterator , ast::expression()   , Skipper > expression;
         qi::rule< Iterator , std::string()  , Skipper > index;
         qi::rule< Iterator , std::string() , Skipper > stringLit;
-        qi::rule< Iterator , int , Skipper > hexadecimal;
-        
+
         unescaped_string<Iterator, Skipper> us;
         const char * singleQuote ="'";
         const char * doubleQuote ="\"";
@@ -269,7 +265,16 @@ namespace HIDCollapse
                     ast::hidCollapseList & out )
     {
         std::ifstream input( filename.c_str() );
-        return parse_istream( input, out );
+        if( input.is_open() )
+        {
+            
+            return parse_istream( input, out );
+        }
+        else
+        {
+            std::cout << "Could not open " << filename << std::endl;
+            return false;
+        }
     }
     
     bool parse_istream( std::istream & input , ast::hidCollapseList & out )
@@ -293,22 +298,37 @@ namespace HIDCollapse
         
         using namespace HIDCollapse;
         
-        bool r = qi::phrase_parse( position_begin ,
-                                  position_end ,
-                                  main_grammar<pos_iterator_type,boost::spirit::ascii::space_type>(),
-                                  boost::spirit::ascii::space,
-                                  out );
-        
-        if( r && position_begin == position_end )
+        try
         {
-            std::cout << "Parsed successfuly." << std::endl;
+            bool r = qi::phrase_parse( position_begin ,
+                                      position_end ,
+                                      main_grammar<pos_iterator_type,boost::spirit::ascii::space_type>(),
+                                      boost::spirit::ascii::space,
+                                      out );
+            
+            if( r && position_begin == position_end )
+            {
+                //TODO: MAKE THIS a logger
+                std::cout << "Parsed HIDCollapseList successfuly." << std::endl;
+            }
+            else
+            {
+                std::cerr << "Failed to parse HIDCollapseList." << std::endl;
+                r = false;
+            }
+            return r;
+            
         }
-        else
+        catch(const qi::expectation_failure<pos_iterator_type>& e)
         {
-            std::cerr << "Failed to parse." << std::endl;
-            r = false;
+            const boost::spirit::classic::file_position_base<std::string>& pos = e.first.get_position();
+            std::cerr <<
+            "Parse error at file " << pos.file <<
+            " line " << pos.line << " column " << pos.column << std::endl <<
+            "'" << e.first.get_currentline() << "'" << std::endl <<
+            std::setw(pos.column) << " " << "^- here" << std::endl;
         }
-        return r;
+        return false;
     }
 }
 /*

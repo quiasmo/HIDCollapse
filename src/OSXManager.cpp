@@ -66,7 +66,7 @@ namespace HIDCollapse
                 {
                     nameMap[element.usageString] = ref;
                 }
-                if( element.sequential <= 0 )
+                if( element.sequential >= 0 )
                 {
                     seqMap[element.sequential] = ref;
                 }
@@ -76,38 +76,21 @@ namespace HIDCollapse
     
     void OSXDeviceDescriptor::makeDescriptor( ElementDescriptor & ed, IOHIDElementRef ref )
     {
-        long page , usage, cookie;
         char elemName[512];
-        if(IOHIDElement_GetLongProperty( ref , CFSTR(kIOHIDElementUsageKey), &usage) &&
-           IOHIDElement_GetLongProperty( ref , CFSTR(kIOHIDElementUsagePageKey), &page))
-        {
-            ed.hidUsage.usage = usage;
-            ed.hidUsage.page = page;
-            ed.usageString = "";//TODO:getUsageString( ), see HID_Utilities
-        }
-        else
-        {
-            ed.hidUsage.usage = -1;
-            ed.hidUsage.page =-1;
-            ed.usageString = "";
-        }
         
-        if( !IOHIDElement_GetLongProperty( ref , CFSTR(kIOHIDElementCookieKey), &cookie))
-        {
-            ed.sequential = cookie;
-        }
-        else
-        {
-            cookie = -1;
-        }
+        ed.hidUsage.page = IOHIDElementGetUsagePage( ref );
+        ed.hidUsage.usage = IOHIDElementGetUsage( ref );
         
-        CFTypeRef tCFTypeRef;
-        tCFTypeRef = IOHIDElementGetProperty( ref, CFSTR(kIOHIDElementNameKey) ) ;
-        if( CFGetTypeID(tCFTypeRef) == CFStringGetTypeID() )
+        ed.usageString = ""; //TODO
+        
+        ed.sequential = IOHIDElementGetCookie( ref );
+        
+        CFStringRef cfname = IOHIDElementGetName( ref ) ;
+        if( cfname )
         {
-            CFStringGetCString( (CFStringRef)tCFTypeRef , elemName , 512, kCFStringEncodingASCII );
+            CFStringGetCString( cfname , elemName , 512, kCFStringEncodingASCII );
             ed.nameKey = elemName ;
-            CFRelease( tCFTypeRef );
+            CFRelease( cfname );
         }
         else{
             ed.nameKey = "";
@@ -253,10 +236,10 @@ namespace HIDCollapse
             //open the Manager
             IOReturn res = IOHIDManagerOpen( osxHidManager, kIOHIDOptionsTypeNone );
             
-            if( res == kIOReturnSuccess )
+            if( res != kIOReturnSuccess )
             {
-                rebuildOsxReportedDevicesList();
-                rebuildDeviceDescriptors();
+                //some error
+                cleanup();
             }
         }
     }
@@ -334,6 +317,18 @@ namespace HIDCollapse
         }        
     }
     
+    void OSXManager::buildDeviceList()
+    {
+        rebuildOsxReportedDevicesList();
+        rebuildDeviceDescriptors();
+    }
+    
+    void OSXManager::capture()
+    {
+        //?
+    }
+
+    
     void OSXManager::cleanup()
     {
         for( tPhysicalDevices::iterator i = mPhysicalDevices.begin(); i!=mPhysicalDevices.end(); i++ )
@@ -346,13 +341,11 @@ namespace HIDCollapse
         if( osxHidManager )
         {
             IOHIDManagerClose( osxHidManager , kIOHIDOptionsTypeNone );
-            CFRelease( osxHidManager );
+            //CFRelease( osxHidManager );
         }
         osxHidManager = 0;
         
         osxReportedDevices.clear();
-        
-        
         
     }
     

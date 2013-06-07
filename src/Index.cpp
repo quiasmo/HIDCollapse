@@ -47,39 +47,39 @@ namespace HIDCollapse {
     }
     
     //const access to string indexed fields return null if not present
-    const IndexedAxis *        Index::getAxis( const std::string & key ) const
+    IndexedAxis *        Index::getAxis( const std::string & key ) const
     {
         tStringIndex::const_iterator i = strAxes.find(key);
         if( i != strAxes.end() )
-            return static_cast<const IndexedAxis*> (i->second);
+            return static_cast<IndexedAxis*> (i->second);
         else
             return 0;
     }
     
-    const IndexedButton *     Index::getButton( const std::string & key ) const
+    IndexedButton *     Index::getButton( const std::string & key ) const
     {
         tStringIndex::const_iterator i = strButtons.find( key );
-        if( i != strAxes.end() )
-            return static_cast<const IndexedButton*> (i->second);
+        if( i != strButtons.end() )
+            return static_cast<IndexedButton*> (i->second);
         else
             return 0;
     }
     
     //const access to int indexed fields return null if not present
-    const IndexedAxis *        Index::getAxis( int key ) const
+    IndexedAxis *        Index::getAxis( int key ) const
     {
         tIntIndex::const_iterator i = intAxes.find( key  );
         if( i != intAxes.end() )
-            return static_cast<const IndexedAxis*> (i->second);
+            return static_cast<IndexedAxis*> (i->second);
         else
             return 0;
     }
     
-    const IndexedButton *      Index::getButton( int key ) const
+    IndexedButton *      Index::getButton( int key ) const
     {
         tIntIndex::const_iterator i = intButtons.find( key );
         if( i != intButtons.end() )
-            return static_cast<const IndexedButton*> (i->second);
+            return static_cast<IndexedButton*> (i->second);
         else
             return 0;
     }
@@ -173,6 +173,20 @@ namespace HIDCollapse {
         tElements physicalElements;
         
         physicalDevice->listElementDescriptors(physicalElements);
+        
+        /*
+        {
+            std::cout << "Physical Device " << physicalDevice->getVendorProductCombo() <<
+            " lists the following elements: " << std::endl;
+            for( tElements::iterator e = physicalElements.begin() ;
+                e != physicalElements.end() ;
+                e++ )
+            {
+                std::cout << "\t" << *e << std::endl;
+                
+            }
+        }
+        */
         
         //add each entry in the ast to the index
         for (ast::entries::const_iterator entry = entries.begin();

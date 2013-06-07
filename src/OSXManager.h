@@ -42,7 +42,7 @@ namespace HIDCollapse
     };
     */
      
-    class OSXDeviceDescriptor: public DeviceDescriptor
+    class HIDC_EXPORT OSXDeviceDescriptor: public DeviceDescriptor
     {
     public:
         OSXDeviceDescriptor( const std::string & manuf, const std::string & product ,
@@ -55,7 +55,7 @@ namespace HIDCollapse
                                                         int64_t * outMax );
 
         virtual void listElementDescriptors( std::vector<ElementDescriptor> & out );
-        
+                
         IOHIDDeviceRef deviceRef;
         CFArrayRef elements;
     protected:
@@ -66,11 +66,12 @@ namespace HIDCollapse
         tSeqMap seqMap;
         tUsageMap usageMap;
         
+        
         static void makeDescriptor( ElementDescriptor & ed, IOHIDElementRef );
     };
     
 
-    class OSXManager: public Manager
+    class HIDC_EXPORT OSXManager: public Manager
     {
     public:
         OSXManager();
@@ -85,12 +86,11 @@ namespace HIDCollapse
         typedef std::vector<IOHIDDeviceRef> t_reportedDevices;
 
         t_reportedDevices osxReportedDevices;
-            
-        void buildNovelIndices();
+                    
+        virtual void buildDeviceList();
+        virtual void capture();
         
     private:
-        
-        
         //helper functions to setup the system
         static CFMutableArrayRef buildMultiDeviceList( const UInt32 *inUsagePages, const UInt32 *inUsages, int inNumDeviceTypes );
         static CFMutableDictionaryRef setUpMatchingDictionary( UInt32 inUsagePage, UInt32 inUsage );

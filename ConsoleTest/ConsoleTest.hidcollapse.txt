@@ -1,0 +1,33 @@
+map device( "Logitech Dual Action" ) to index( "Console Test Index from dual action" ) 
+{ 
+	elem( 0x9 , 0x2 ) : button( "fire" )
+	elem( 0x9 , 0x4 ) : button( "quit" )
+	elem( 0x9 , 0x5 ) : button( "L1" )
+	elem( 0x9 , 0x6 ) : button( "R1" )
+	elem( 0x9 , 0x7 ) : button( "L2" )
+	elem( 0x9 , 0x8 ) : button( "R2" )
+	elem( 0x9 , 0xa ) : button( "pause" )
+
+	elem( 0x1 , 0x30 ) : axis( "Camera Left/Right" )
+	elem( 0x1 , 0x31 ) : axis( "Camera Up/Down" )
+	
+	elem( 0x1 , 0x32 ) : axis( "ScreenMove Up/Down")
+	elem( 0x1 , 0x35 ) : axis( "ScreenMove Left/Right" )
+}
+
+map device( 'Sony PLAYSTATION(R)3 Controller' ) to index( "Console Test Index from ps3" )
+{
+	elem( 0x9 , 0xd ) : button( "quit" )
+	elem( 0x9 , 0xf ) : button( "fire" )
+	elem( 0x9 , 0x9 ) : button( "L2" )
+	elem( 0x9 , 0xb ) : button( "L1" )
+	elem( 0x9 , 0xa ) : button( "R2" )
+	elem( 0x9 , 0xc ) : button( "R1" )
+	elem( 0x9 , 0x4 ) : button( "pause" )
+
+	elem( 0x1 , 0x30 ) : axis( "Camera Left/Right" )
+	elem( 0x1 , 0x31 ) : axis( "Camera Up/Down" )
+	
+	elem( 0x1 , 0x32 ) : axis( "ScreenMove Up/Down")
+	elem( 0x1 , 0x35 ) : axis( "ScreenMove Left/Right" )
+}

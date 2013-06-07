@@ -32,7 +32,7 @@
 
 namespace HIDCollapse
 {
-    class Index
+    class HIDC_EXPORT Index
     {
     public:
         
@@ -40,12 +40,12 @@ namespace HIDCollapse
         virtual ~Index();
         
         //const access to string indexed fields return null if not present
-        virtual const IndexedAxis *        getAxis( const std::string & ) const ;
-        virtual const IndexedButton *      getButton( const std::string & ) const;
+        virtual IndexedAxis *        getAxis( const std::string & ) const ;
+        virtual IndexedButton *      getButton( const std::string & ) const;
         
         //const access to int indexed fields return null if not present
-        virtual const IndexedAxis *        getAxis( int index ) const ;
-        virtual const IndexedButton *      getButton( int index ) const ;
+        virtual IndexedAxis *        getAxis( int index ) const ;
+        virtual IndexedButton *      getButton( int index ) const ;
         
         DeviceDescriptor * getPhysicalDevice() const;
         void setPhysicalDevice( DeviceDescriptor * );

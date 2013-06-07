@@ -30,7 +30,7 @@
 #include "HIDCollapseParser.h"
 namespace HIDCollapse
 {
-    class Manager
+    class HIDC_EXPORT Manager
     {
     public:
         
@@ -43,13 +43,12 @@ namespace HIDCollapse
         virtual void capture()=0;
        
         //convenience methods to grab button from first available Index
-        virtual const IndexedButton * findButton( const std::string & elementIndex , int player = -1 );
-        virtual const IndexedAxis * findAxis( const std::string & elementIndex , int player = -1 );
+        virtual IndexedButton * findButton( const std::string & elementIndex , int player = -1 );
+        virtual IndexedAxis * findAxis( const std::string & elementIndex , int player = -1 );
         
         //sets the given index to be player.
         //if an index already holds this slot, they trade places
         virtual void setPlayerIndex( Index * , int player );
-        
         
         //negative values gives you any player available
         virtual void getPlayers( std::vector<int> & out );
@@ -70,10 +69,11 @@ namespace HIDCollapse
         //builds indices from mPhysicalDevices matching
         //parsed index descriptors
         virtual void buildIndices();
-        
         //physical devices added or removed
         virtual void devicePlugged( DeviceDescriptor * physicalDevice );
         virtual void deviceUnplugged( DeviceDescriptor * physicalDevice );
+        
+        //virtual void writeDeviceDescription( );
         
         //clears everything, including parsed configuration
         virtual void clear();
@@ -81,6 +81,9 @@ namespace HIDCollapse
         //gets player index.
         //if player < 0 then returns any one index
         virtual Index * fetchIndex( int player );
+        virtual void putInNextAvailablePlayerSlot( Index * newIndex );
+        
+        Index * findIndexWithPhysicalDevice( const DeviceDescriptor * physicalDevice );
         
         //mapping instructions
         ast::hidCollapseList indexDefinitions;

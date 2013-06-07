@@ -23,6 +23,9 @@
  */
 #pragma once
 
+#if !defined( HIDC_EXPORT )
+#define HIDC_EXPORT __attribute__((visibility("default")))
+#endif
 namespace HIDCollapse
 {
     class Manager;
@@ -33,6 +36,7 @@ namespace HIDCollapse
     class IndexedButton;
     class IndexedAxis;
     class tHidUsage;
+    
 }
 
 #include "Devices.h"

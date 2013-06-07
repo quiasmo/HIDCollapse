@@ -66,19 +66,18 @@ namespace HIDCollapse
     ElementDescriptor::ElementDescriptor():hidUsage(-1,-1),sequential(-1), osReference(0)
     {
     }
-    ElementDescriptor::ElementDescriptor( int64_t page , int64_t usage ):hidUsage(page,usage), osReference(0)
+    ElementDescriptor::ElementDescriptor( int64_t page , int64_t usage ):hidUsage(page,usage), osReference(0),sequential(-1)
     {
     }
     
-    ElementDescriptor::ElementDescriptor( const std::string & nameKey ): hidUsage(-1,-1), sequential(-1),osReference(0)
+    ElementDescriptor::ElementDescriptor( const std::string & _nameKey ): hidUsage(-1,-1), sequential(-1),osReference(0)
     {
+        nameKey = _nameKey;
     }
     ElementDescriptor::ElementDescriptor( int64_t sequential ) : hidUsage(-1,-1), sequential(sequential),osReference(0)
     {
-        hidUsage.usage = -1;
-        hidUsage.page = -1;
     }
-    ElementDescriptor::ElementDescriptor( const ElementDescriptor & ed ):hidUsage(-1,-1),osReference(0)
+    ElementDescriptor::ElementDescriptor( const ElementDescriptor & ed ):hidUsage(ed.hidUsage)
     {
         *this = ed;
     }
@@ -89,10 +88,12 @@ namespace HIDCollapse
     
     bool ElementDescriptor::strictCompare( const ElementDescriptor & e )
     {
-        if( nameKey.size() > 0 ) return nameKey.compare(e.nameKey) == 0;
-        if( sequential >= 0 ) return sequential == e.sequential;
-        if( hidUsage.page >=0 && hidUsage.usage >= 0 )
+        if( hidUsage.page >= 0 && hidUsage.usage >= 0 )
             return  hidUsage.page == e.hidUsage.page && hidUsage.usage == e.hidUsage.usage;
+        if( nameKey.size() > 0 )
+            return nameKey.compare(e.nameKey) == 0;
+        if( sequential >= 0 )
+            return sequential == e.sequential;
         
         return false;
     }
@@ -108,7 +109,35 @@ namespace HIDCollapse
         return *this;
     }
 
+    std::ostream & operator<<( std::ostream & os , const ElementDescriptor & ed )
+    {
+        os << "element( " ;
         
+        bool hidusage =false;
+        bool seq = false;
+        
+        if( ed.hidUsage.usage >= 0 )
+        {
+            os << "[ 0x" << std::hex << ed.hidUsage.page <<
+             " , 0x" << std::hex << ed.hidUsage.usage << " ] " << std::dec;
+            hidusage = true;
+        }
+        if( ed.sequential >= 0)
+        {
+            if( hidusage ) std::cout << " , ";
+            std::cout << ed.sequential;
+            seq = true;
+        }
+        if( ed.nameKey.size() > 0)
+        {
+            if( seq || hidusage ) std::cout << " , ";
+            std::cout << " \"" << ed.nameKey << "\" ";
+        }
+        
+        os << " )";
+        return os;
+    }
+
     DeviceDescriptor::DeviceDescriptor( int64_t vendorID, int64_t productID , int64_t versionID ):
     vendorID(vendorID),productID(productID),versionID(versionID)
     {
@@ -162,7 +191,7 @@ namespace HIDCollapse
         //clamp anything we might have
         if ( res > 1.f ) return 1.f;
         if( res < 0 ) return 0.f;
-        else return 0.f;
+        else return res;
     }
     
     float DeviceDescriptor::intCompare(int64_t i1, int64_t i2)
@@ -293,5 +322,9 @@ namespace HIDCollapse
 
     }
 
-
+    const std::string & DeviceDescriptor::getVendorProductCombo()
+    {
+        return vendor_product_combo;
+    }
+    
 }

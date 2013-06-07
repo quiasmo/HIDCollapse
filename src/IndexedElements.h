@@ -30,7 +30,7 @@ namespace HIDCollapse
     
     
     // base class for elements
-    class IndexedElement
+    class HIDC_EXPORT IndexedElement
     {
     public:
         enum Type
@@ -41,9 +41,9 @@ namespace HIDCollapse
         
         virtual ~IndexedElement() = 0;
         
-        virtual Type getType() = 0;
-        virtual Index * getParent();
-        virtual const ElementDescriptor & getPhysicalElement();
+        virtual Type getType() const = 0;
+        virtual Index * getParent() const ;
+        virtual const ElementDescriptor & getPhysicalElement()const;
         
     protected:
         IndexedElement( Index * parent , const ElementDescriptor & physicalElement );
@@ -52,24 +52,24 @@ namespace HIDCollapse
     };
     
     
-    class IndexedButton: public IndexedElement
+    class HIDC_EXPORT IndexedButton: public IndexedElement
     {
     public:
 
         IndexedButton( Index * parent , const ElementDescriptor & physicalElement );
         virtual ~IndexedButton();
-        virtual Type getType();
-        bool isPressed();
+        virtual Type getType()const ;
+        bool isPressed() ;
         
     protected:
     };
     
-    class IndexedAxis: public IndexedElement
+    class HIDC_EXPORT IndexedAxis: public IndexedElement
     {
     public:
         IndexedAxis( Index * parent , const ElementDescriptor & physicalElement );
-        virtual ~IndexedAxis();
-        virtual Type getType();
+        virtual ~IndexedAxis() ;
+        virtual Type getType()const;
         
         //try not to use these as they 
         int64_t getIntValue();

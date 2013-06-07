@@ -37,8 +37,8 @@ namespace HIDCollapse
         //a page / usage key 
         struct elemHexPairKey
         {
-            int page;
-            int usage;
+            unsigned int page;
+            unsigned int usage;
         };
         
         typedef boost::variant<
@@ -54,15 +54,15 @@ namespace HIDCollapse
         
         struct deviceTriplet
         {
-            int vendor;
-            int product;
-            int version;
+            unsigned int vendor;
+            unsigned int product;
+            unsigned int version;
         };
         
         struct devicePair
         {
-            int vendor;
-            int product;
+            unsigned int vendor;
+            unsigned int product;
         };
         
         typedef boost::variant<

@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		0D054FEC1756D95E00D3408D /* HIDCollapseParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0D054FEA1756D95E00D3408D /* HIDCollapseParser.cpp */; };
-		0D054FED1756D95E00D3408D /* HIDCollapseParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0D054FEA1756D95E00D3408D /* HIDCollapseParser.cpp */; };
 		0D054FEE1756D95E00D3408D /* HIDCollapseParser.h in Headers */ = {isa = PBXBuildFile; fileRef = 0D054FEB1756D95E00D3408D /* HIDCollapseParser.h */; };
 		0D068CF2174B36FA005FF470 /* Index.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0D068CF0174B36FA005FF470 /* Index.cpp */; };
 		0D068CF3174B36FA005FF470 /* Index.h in Headers */ = {isa = PBXBuildFile; fileRef = 0D068CF1174B36FA005FF470 /* Index.h */; };
@@ -28,11 +27,23 @@
 		0D0ED3D7174D511200DB058F /* IOHIDElement_.c in Sources */ = {isa = PBXBuildFile; fileRef = 0D0ED3D0174D511200DB058F /* IOHIDElement_.c */; };
 		0D0ED3D8174D511200DB058F /* IOHIDElement_.h in Headers */ = {isa = PBXBuildFile; fileRef = 0D0ED3D1174D511200DB058F /* IOHIDElement_.h */; };
 		0D0ED3D9174D511200DB058F /* IOHIDLib_.h in Headers */ = {isa = PBXBuildFile; fileRef = 0D0ED3D2174D511200DB058F /* IOHIDLib_.h */; };
-		0DA3419617547A3C00AF54FD /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0DA3419517547A3C00AF54FD /* GLUT.framework */; };
-		0DA3419817547A5900AF54FD /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0DA3419717547A5900AF54FD /* OpenGL.framework */; };
+		0D9FBEE6175FB4FE00440898 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0DFE5FEA175B14A5006D1B7C /* IOKit.framework */; };
+		0D9FBEE7175FB50D00440898 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0DFE5FE8175B1497006D1B7C /* CoreFoundation.framework */; };
+		0D9FBEE8175FB84600440898 /* libHIDCollapse.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0D068CE7174B35FD005FF470 /* libHIDCollapse.a */; };
 		0DFE5FE9175B1497006D1B7C /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0DFE5FE8175B1497006D1B7C /* CoreFoundation.framework */; };
 		0DFE5FEB175B14A5006D1B7C /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0DFE5FEA175B14A5006D1B7C /* IOKit.framework */; };
+		0DFE5FEE175E8584006D1B7C /* ConsoleTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0DFE5FEC175E8584006D1B7C /* ConsoleTest.cpp */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		0DFE5FF0175E87FD006D1B7C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0D068CDF174B35FD005FF470 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0D068CE6174B35FD005FF470;
+			remoteInfo = HIDCollapse;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		0D0ED3E51750067C00DB058F /* CopyFiles */ = {
@@ -49,7 +60,7 @@
 /* Begin PBXFileReference section */
 		0D054FEA1756D95E00D3408D /* HIDCollapseParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = HIDCollapseParser.cpp; path = src/HIDCollapseParser.cpp; sourceTree = SOURCE_ROOT; };
 		0D054FEB1756D95E00D3408D /* HIDCollapseParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HIDCollapseParser.h; path = src/HIDCollapseParser.h; sourceTree = SOURCE_ROOT; };
-		0D068CE7174B35FD005FF470 /* libHIDCollapse.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libHIDCollapse.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		0D068CE7174B35FD005FF470 /* libHIDCollapse.a */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libHIDCollapse.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		0D068CF0174B36FA005FF470 /* Index.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Index.cpp; path = src/Index.cpp; sourceTree = "<group>"; };
 		0D068CF1174B36FA005FF470 /* Index.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Index.h; path = src/Index.h; sourceTree = "<group>"; };
 		0D068CF4174B380E005FF470 /* HIDCollapse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HIDCollapse.h; path = src/HIDCollapse.h; sourceTree = "<group>"; };
@@ -69,11 +80,9 @@
 		0D0ED3D1174D511200DB058F /* IOHIDElement_.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOHIDElement_.h; sourceTree = "<group>"; };
 		0D0ED3D2174D511200DB058F /* IOHIDLib_.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOHIDLib_.h; sourceTree = "<group>"; };
 		0D0ED3E71750067C00DB058F /* ConsoleTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ConsoleTest; sourceTree = BUILT_PRODUCTS_DIR; };
-		0DA3419517547A3C00AF54FD /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
-		0DA3419717547A5900AF54FD /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
-		0DA3422B1755496D00AF54FD /* AGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AGL.framework; path = System/Library/Frameworks/AGL.framework; sourceTree = SDKROOT; };
 		0DFE5FE8175B1497006D1B7C /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		0DFE5FEA175B14A5006D1B7C /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
+		0DFE5FEC175E8584006D1B7C /* ConsoleTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ConsoleTest.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -90,8 +99,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0DA3419817547A5900AF54FD /* OpenGL.framework in Frameworks */,
-				0DA3419617547A3C00AF54FD /* GLUT.framework in Frameworks */,
+				0D9FBEE8175FB84600440898 /* libHIDCollapse.a in Frameworks */,
+				0D9FBEE7175FB50D00440898 /* CoreFoundation.framework in Frameworks */,
+				0D9FBEE6175FB4FE00440898 /* IOKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -103,9 +113,6 @@
 			children = (
 				0DFE5FEA175B14A5006D1B7C /* IOKit.framework */,
 				0DFE5FE8175B1497006D1B7C /* CoreFoundation.framework */,
-				0DA3422B1755496D00AF54FD /* AGL.framework */,
-				0DA3419717547A5900AF54FD /* OpenGL.framework */,
-				0DA3419517547A3C00AF54FD /* GLUT.framework */,
 				0D068D02174BDCE1005FF470 /* src */,
 				0D0ED3CB174D511200DB058F /* IOHIDManager */,
 				0D0ED3E81750067C00DB058F /* ConsoleTest */,
@@ -116,7 +123,7 @@
 		0D068CE8174B35FD005FF470 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				0D068CE7174B35FD005FF470 /* libHIDCollapse.dylib */,
+				0D068CE7174B35FD005FF470 /* libHIDCollapse.a */,
 				0D0ED3E71750067C00DB058F /* ConsoleTest */,
 			);
 			name = Products;
@@ -160,6 +167,7 @@
 			isa = PBXGroup;
 			children = (
 				0DA3422D1755534100AF54FD /* src */,
+				0DFE5FEC175E8584006D1B7C /* ConsoleTest.cpp */,
 			);
 			path = ConsoleTest;
 			sourceTree = "<group>";
@@ -209,7 +217,7 @@
 			);
 			name = HIDCollapse;
 			productName = HIDCollapse;
-			productReference = 0D068CE7174B35FD005FF470 /* libHIDCollapse.dylib */;
+			productReference = 0D068CE7174B35FD005FF470 /* libHIDCollapse.a */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 		0D0ED3E61750067C00DB058F /* ConsoleTest */ = {
@@ -223,6 +231,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				0DFE5FF1175E87FD006D1B7C /* PBXTargetDependency */,
 			);
 			name = ConsoleTest;
 			productName = ConsoleTest;
@@ -277,11 +286,19 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0D054FED1756D95E00D3408D /* HIDCollapseParser.cpp in Sources */,
+				0DFE5FEE175E8584006D1B7C /* ConsoleTest.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		0DFE5FF1175E87FD006D1B7C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0D068CE6174B35FD005FF470 /* HIDCollapse */;
+			targetProxy = 0DFE5FF0175E87FD006D1B7C /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		0D068CE9174B35FD005FF470 /* Debug */ = {
@@ -314,12 +331,6 @@
 				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				ONLY_ACTIVE_ARCH = YES;
-				OTHER_LDFLAGS = (
-					"-lopencv_core",
-					"-lopencv_highgui",
-					"-lopencv_imgproc",
-					"-lopencv_calib3d",
-				);
 				SDKROOT = macosx;
 			};
 			name = Debug;
@@ -347,12 +358,6 @@
 				HEADER_SEARCH_PATHS = /usr/local/lib;
 				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
-				OTHER_LDFLAGS = (
-					"-lopencv_core",
-					"-lopencv_highgui",
-					"-lopencv_imgproc",
-					"-lopencv_calib3d",
-				);
 				SDKROOT = macosx;
 			};
 			name = Release;
@@ -361,13 +366,16 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
+				EXECUTABLE_EXTENSION = a;
 				EXECUTABLE_PREFIX = lib;
 				HEADER_SEARCH_PATHS = (
 					/usr/local/lib,
 					/usr/local/include,
 					"/Users/juan/Dev/boost-trunk",
 				);
+				MACH_O_TYPE = staticlib;
 				OTHER_CPLUSPLUSFLAGS = "";
+				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 			};
@@ -377,13 +385,16 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
+				EXECUTABLE_EXTENSION = a;
 				EXECUTABLE_PREFIX = lib;
 				HEADER_SEARCH_PATHS = (
 					/usr/local/lib,
 					/usr/local/include,
 					"/Users/juan/Dev/boost-trunk",
 				);
+				MACH_O_TYPE = staticlib;
 				OTHER_CPLUSPLUSFLAGS = "";
+				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 			};
@@ -395,7 +406,9 @@
 				HEADER_SEARCH_PATHS = (
 					/usr/local/include,
 					"/Users/juan/Dev/boost-trunk",
+					$PROJECT_DIR/src,
 				);
+				MACH_O_TYPE = mh_execute;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				VALID_ARCHS = x86_64;
 			};
@@ -407,7 +420,9 @@
 				HEADER_SEARCH_PATHS = (
 					/usr/local/include,
 					"/Users/juan/Dev/boost-trunk",
+					$PROJECT_DIR/src,
 				);
+				MACH_O_TYPE = mh_execute;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				VALID_ARCHS = x86_64;
 			};

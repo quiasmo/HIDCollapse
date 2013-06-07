@@ -23,6 +23,8 @@
  */
 
 #include "HIDCollapse.h"
+//#include <boost/log/trivial.hpp>
+#define BOOST_LOG_TRIVIAL(which) std::cout
 
 namespace HIDCollapse
 {
@@ -58,16 +60,17 @@ namespace HIDCollapse
     //adds Index definitions to this Manager
     void Manager::parseIndexDefinitions( const std::string & file  )
     {
-        ast::hidCollapseList indexMappings;
         try
         {
-            bool res = parse_file(file, indexMappings );
-            if ( res )
-                indexDefinitions.insert(indexDefinitions.end(), indexDefinitions.begin(), indexDefinitions.end());
+            bool res = parse_file(file, indexDefinitions );
+            if( !res )
+            {
+                indexDefinitions.clear();                
+            }
         }
         catch(const std::exception& e)
         {
-            std::cerr << "Exception: " << e.what() << std::endl;
+             BOOST_LOG_TRIVIAL(error) << "Exception: " << e.what() << std::endl ;
         }
     }
     
@@ -87,8 +90,30 @@ namespace HIDCollapse
         }
     };
     
+    Index * Manager::findIndexWithPhysicalDevice( const DeviceDescriptor * physicalDevice )
+    {
+        for( tIndices::iterator ind = mIndices.begin(); ind != mIndices.end(); ind++)
+        {
+            if( (*ind)->getPhysicalDevice() == physicalDevice ) return *ind;
+        }
+        return 0;
+    }
+    
     void Manager::buildIndices()
     {
+        /*
+        BOOST_LOG_TRIVIAL(trace) << "Initially available physical devices: " << std::endl;
+        if( mPhysicalDevices.size() == 0 )
+             BOOST_LOG_TRIVIAL(trace) << "\t No physical devices." << std::endl;
+        
+        for( tPhysicalDevices::iterator i= mPhysicalDevices.begin() ;
+            i!= mPhysicalDevices.end() ;
+            i++ )
+        {
+            DeviceDescriptor * dd = *i;
+             BOOST_LOG_TRIVIAL(trace) << "\t" << dd->getVendorProductCombo() << std::endl;
+        }
+        */
         
         for( ast::hidCollapseList::iterator d = indexDefinitions.begin();
             d != indexDefinitions.end() ;
@@ -103,27 +128,22 @@ namespace HIDCollapse
                 i++ )
             {
                 DeviceDescriptor * physicalDevice = *i;
-                if( declaredDevice.fuzzyCompareType( physicalDevice ) > DeviceDescriptor::MATCH_THRESHOLD )
+                
+                Index * existing = findIndexWithPhysicalDevice( physicalDevice );
+                
+                if( !existing )
                 {
-                    //build an index for this device
-                    //element mapping occurrs at an OS-aware level
-                    //so let the implementaiton of createIndex and createElements handle that
-                    Index * newIndex = new Index( this, d->entries , d->index );
-                    newIndex->indexElements( d->entries );
-                    mIndices.push_back( newIndex );
-                    
-                    //assign the next available payer slot
-                    int player = 0;
-                    bool done = false;
-                    do {
-                        tPlayers::iterator i = mPlayers.find( player );
-                        if( i == mPlayers.end() )
-                        {
-                            mPlayers[player]= newIndex;
-                            newIndex->player =  player ;
-                            done = true;
-                        }
-                    } while (!done);
+                    if( declaredDevice.fuzzyCompareType( physicalDevice ) > DeviceDescriptor::MATCH_THRESHOLD )
+                    {
+                        //build an index for this device
+                        //element mapping occurrs at an OS-aware level
+                        //so let the implementaiton of createIndex and createElements handle that
+                        Index * newIndex = new Index( this, d->entries , d->index );
+                        newIndex->setPhysicalDevice( physicalDevice );
+                        mIndices.push_back( newIndex );
+                        
+                        putInNextAvailablePlayerSlot(newIndex);
+                    }
                 }
             }
         }
@@ -131,6 +151,12 @@ namespace HIDCollapse
     
     void Manager::devicePlugged( DeviceDescriptor * physicalDevice )
     {
+        bool matchedExisting = false;
+        
+        Index * existing = findIndexWithPhysicalDevice(physicalDevice);
+        if( existing ) return;
+        
+        //look for matching deviceless index
         for( tIndices::iterator i = mIndices.begin(); i != mIndices.end() ; i++ )
         {
             Index * index = * i;
@@ -141,9 +167,56 @@ namespace HIDCollapse
                 {
                     index->setPhysicalDevice( physicalDevice );
                     index->forgetDevice();
+                    matchedExisting = true;
+                    
+                     BOOST_LOG_TRIVIAL(trace) << "Reconnected physical device (" << physicalDevice->getVendorProductCombo() << ") to Player [" << index->getPlayer() << "] with existing index \"" << index->getName() << "\"" << std::endl;
                 }
             }
         }
+        
+        if( !matchedExisting )
+        {
+            //build look for matching index delcaration and create an index
+            for( ast::hidCollapseList::iterator d = indexDefinitions.begin();
+                d != indexDefinitions.end() ;
+                d++ )
+            {
+                //build a comparable device descriptor ot compare with the ones
+                //generated by the operating system specific code
+                DeviceDescriptor declaredDevice = boost::apply_visitor( makeDescriptor() , d->device );
+                
+                if( declaredDevice.fuzzyCompareType( physicalDevice ) > DeviceDescriptor::MATCH_THRESHOLD )
+                {
+                    //build an index for this device
+                    //element mapping occurrs at an OS-aware level
+                    //so let the implementaiton of createIndex and createElements handle that
+                    Index * newIndex = new Index( this, d->entries , d->index );
+                    newIndex->setPhysicalDevice( physicalDevice );
+                    mIndices.push_back( newIndex );
+                    
+                    putInNextAvailablePlayerSlot( newIndex );
+                    return;
+                }
+            }
+        }
+    }
+    
+    void Manager::putInNextAvailablePlayerSlot(HIDCollapse::Index *newIndex)
+    {
+        //assign the next available payer slot
+        int player = 0;
+        bool done = false;
+        do {
+            tPlayers::iterator i = mPlayers.find( player );
+            if( i == mPlayers.end() )
+            {
+                mPlayers[player]= newIndex;
+                newIndex->player =  player ;
+                done = true;
+                 BOOST_LOG_TRIVIAL(trace) << "Player [" << player << "] now accesses device (" << newIndex->getPhysicalDevice()->getVendorProductCombo() << ") with index type \""<< newIndex->getName() << "\""<< std::endl;
+            }
+            player ++;
+        } while (!done);
     }
     
     void Manager::deviceUnplugged( DeviceDescriptor * physicalDevice )
@@ -168,7 +241,8 @@ namespace HIDCollapse
         {
             for (tPlayers::iterator p = mPlayers.begin(); p!= mPlayers.end() ; p++ )
             {
-                return p->second;
+                if( p->second->getPhysicalDevice() )
+                    return p->second;
             }
         }
         //no indices
@@ -176,7 +250,7 @@ namespace HIDCollapse
     }
     
     
-    const IndexedButton * Manager::findButton( const std::string & elementIndex , int player )
+    IndexedButton * Manager::findButton( const std::string & elementIndex , int player )
     {
         Index * i = fetchIndex( player );
         if( i )
@@ -187,7 +261,7 @@ namespace HIDCollapse
         return 0;
     }
     
-    const IndexedAxis * Manager::findAxis( const std::string & elementIndex , int player )
+    IndexedAxis * Manager::findAxis( const std::string & elementIndex , int player )
     {
         Index * i = fetchIndex( player );
         if( i )
@@ -221,6 +295,7 @@ namespace HIDCollapse
     
     void Manager::getPlayers( std::vector<int> & out )
     {
+        out.clear();
         for( tPlayers::iterator i = mPlayers.begin() ; i != mPlayers.end(); i++ )
         {
             out.push_back( i->first );
