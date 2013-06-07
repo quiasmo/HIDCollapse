@@ -5,6 +5,8 @@ Easily configurable indexed access to HID Compliant Gamepad and Joystick
 
 Initially for OSX 10.8 (+-)
 
+help at #HIDCollapse @ freenode
+
 This c++ library is intended to be  used by programmers that want to access HID compliant joystick and gamepad devices without hardcoding per device element-usage semantics.
 
 The idea is to guarantee consistent access to device buttons and axes accross a single application without having to support that device at compile time.
@@ -15,7 +17,6 @@ map device( "Logitech Dual Action" ) to index( "InsectOS Controller")
 {
     elem( 0x4 , 0x1 )       : axis( 1 , "camera up/down" )
     elem( 1 )               : axis( "camera left/right" , 2 )
-    elem( "Square Button" ) : button( "anchor web" , 1 )
 }
 ```
 The user of HIDCollapse loads the configuration files 
